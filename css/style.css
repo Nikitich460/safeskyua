@@ -1,0 +1,73 @@
+* { box-sizing: border-box; }
+
+body{
+  margin:0;
+  padding:16px;
+  background:#0b0f14;
+  color:#e7eef7;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+}
+
+h1{
+  margin:0 0 12px;
+  font-size:22px;
+  font-weight:700;
+}
+
+button{
+  width:100%;
+  padding:14px;
+  border-radius:14px;
+  border:1px solid #2a3a52;
+  background:#172234;
+  color:#fff;
+  font-size:15px;
+  font-weight:600;
+}
+
+button:active{ transform: scale(0.98); }
+
+#status{
+  margin:10px 0 12px;
+  font-size:13px;
+  color:#9fb0c6;
+}
+
+#posts{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.post{
+  background:#121a24;
+  border:1px solid #1e2a3a;
+  border-radius:16px;
+  padding:12px;
+}
+
+.postText{
+  white-space:pre-wrap;
+  line-height:1.35;
+  font-size:14px;
+}
+
+.postMeta{
+  margin-top:8px;
+  font-size:12px;
+  color:#9fb0c6;
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+}
+
+.postMeta a{
+  color:#9fd1ff;
+  text-decoration:none;
+}
+
+/* === Состояния (по словам в посте) === */
+body[data-state="alarm"]   { background:#3a0000; }
+body[data-state="missile"] { background:#3a1a00; }
+body[data-state="uav"]     { background:#1a003a; }
+body[data-state="ok"]      { background:#003a1a; }
