@@ -1,0 +1,22 @@
+{
+  "name": "SafeSky UA",
+  "short_name": "SafeSky",
+  "description": "Повітряні тривоги та загрози в Україні. Дані з Telegram-каналу SafeSky UA.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0b0f14",
+  "theme_color": "#0b0f14",
+  "icons": [
+    {
+      "src": "./res/drawable/icon192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./res/drawable/icon512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
