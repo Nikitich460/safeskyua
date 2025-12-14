@@ -1,25 +1,213 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="uk">
 <head>
   <meta charset="UTF-8">
+  <title>SafeSky UA</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>SafeSky UA</title>
-
-  <link rel="manifest" href="manifest.json">
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#0b0f14">
 
-  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #0b0f14;
+      color: #eaeaea;
+    }
+
+    header {
+      padding: 14px;
+      background: linear-gradient(180deg, #111827, #0b0f14);
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .container {
+      padding: 12px;
+    }
+
+    .button {
+      width: 100%;
+      padding: 12px;
+      margin: 6px 0;
+      border-radius: 10px;
+      border: none;
+      background: #1f2937;
+      color: #fff;
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    .button.secondary {
+      background: #0f172a;
+    }
+
+    .card {
+      background: #0f172a;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 12px;
+      border-left: 4px solid #2563eb;
+    }
+
+    .title {
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+
+    .desc {
+      opacity: 0.9;
+    }
+
+    .link {
+      color: #60a5fa;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    /* MODAL */
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background: #020617;
+      padding: 16px;
+      border-radius: 14px;
+      width: 90%;
+      max-width: 400px;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+      margin: 8px 0;
+      font-size: 15px;
+    }
+  </style>
 </head>
 <body>
 
-  <h1>SafeSky UA</h1>
+<header>SafeSky UA</header>
 
-  <button onclick="loadTelegram()">📡 Завантажити з Telegram</button>
-  <div id="status">—</div>
+<div class="container">
+  <button class="button" onclick="openModal()">🔍 Обрати район</button>
+  <button class="button secondary" onclick="changeRegion()">🔄 Змінити район</button>
 
-  <div id="posts"></div>
+  <div id="status"></div>
+  <div id="posts">Завантаження…</div>
+</div>
 
-  <script src="js/telegram.js"></script>
+<!-- MODAL -->
+<div class="modal" id="modal">
+  <div class="modal-content">
+    <h3>Оберіть район</h3>
+
+    <input id="regionInput" placeholder="Напр. Ізмаїльський район">
+
+    <button class="button" onclick="saveRegion()">Продовжити</button>
+    <button class="button secondary" onclick="saveAll()">🌍 Вся Україна</button>
+  </div>
+</div>
+
+<script>
+const RSS_URL = "https://fetchrss.com/feed/1vUs7wAtc6PC1vUs6e8wQ0ft.rss";
+
+let selectedRegion = localStorage.getItem("region") || "";
+
+if (!selectedRegion) {
+  openModal();
+} else {
+  loadFeed();
+}
+
+function openModal() {
+  document.getElementById("modal").style.display = "flex";
+}
+
+function closeModal() {
+  document.getElementById("modal").style.display = "none";
+}
+
+function saveRegion() {
+  const val = document.getElementById("regionInput").value.trim();
+  if (!val) return alert("Введіть назву району");
+  localStorage.setItem("region", val);
+  selectedRegion = val;
+  closeModal();
+  loadFeed();
+}
+
+function saveAll() {
+  localStorage.setItem("region", "");
+  selectedRegion = "";
+  closeModal();
+  loadFeed();
+}
+
+function changeRegion() {
+  localStorage.removeItem("region");
+  openModal();
+}
+
+async function loadFeed() {
+  const status = document.getElementById("status");
+  const posts = document.getElementById("posts");
+
+  status.innerHTML = selectedRegion
+    ? `✅ Обраний район: <b>${selectedRegion}</b>`
+    : "🌍 Показано: <b>Вся Україна</b>";
+
+  posts.innerHTML = "Завантаження…";
+
+  try {
+    const res = await fetch(
+      "https://api.allorigins.win/raw?url=" + encodeURIComponent(RSS_URL)
+    );
+    const text = await res.text();
+    const xml = new DOMParser().parseFromString(text, "text/xml");
+    const items = [...xml.querySelectorAll("item")];
+
+    posts.innerHTML = "";
+
+    items.forEach(item => {
+      const title = item.querySelector("title")?.textContent || "";
+      const desc = item.querySelector("description")?.textContent || "";
+      const link = item.querySelector("link")?.textContent || "#";
+
+      if (selectedRegion) {
+        const r = selectedRegion.toLowerCase();
+        if (!title.toLowerCase().includes(r) && !desc.toLowerCase().includes(r)) return;
+      }
+
+      posts.innerHTML += `
+        <div class="card">
+          <div class="title">${title}</div>
+          <div class="desc">${desc}</div>
+          <a class="link" href="${link}" target="_blank">Відкрити в Telegram</a>
+        </div>
+      `;
+    });
+
+    if (!posts.innerHTML) {
+      posts.innerHTML = "ℹ️ Немає актуальних повідомлень";
+    }
+
+  } catch (e) {
+    posts.innerHTML = "❌ Помилка завантаження";
+  }
+}
+</script>
+
 </body>
 </html>
