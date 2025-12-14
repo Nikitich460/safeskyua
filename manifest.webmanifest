@@ -1,13 +1,25 @@
 {
   "name": "SafeSky UA",
   "short_name": "SafeSky",
-  "lang": "uk",
-  "start_url": "index.html",
+  "description": "Повітряні тривоги та загрози в Україні. Дані з Telegram-каналу SafeSky UA.",
+  "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#0b0f14",
   "theme_color": "#0b0f14",
   "icons": [
-    { "src": "res/drawable/icon192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "res/drawable/icon512.png", "sizes": "512x512", "type": "image/png" }
+    {
+      "src": "res/drawable/icon192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "res/drawable/icon512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
   ]
 }
