@@ -121,93 +121,62 @@
 </div>
 
 <script>
-const RSS_URL = "https://fetchrss.com/feed/1vUs7wAtc6PC1vUs6e8wQ0ft.rss";
+const FEED_URL = "https://fetchrss.com/feed/1vUs7wAtc6PC1vUs6e8wQ0ft.rss";
 
-let selectedRegion = localStorage.getItem("region") || "";
+const selectedRegion = localStorage.getItem("region"); // ← ВАЖНО
 
-if (!selectedRegion) {
-  openModal();
-} else {
-  loadFeed();
-}
+const regionStatus = document.getElementById("regionStatus");
+const status = document.getElementById("status");
+const list = document.getElementById("feed");
 
-function openModal() {
-  document.getElementById("modal").style.display = "flex";
-}
-
-function closeModal() {
-  document.getElementById("modal").style.display = "none";
-}
-
-function saveRegion() {
-  const val = document.getElementById("regionInput").value.trim();
-  if (!val) return alert("Введіть назву району");
-  localStorage.setItem("region", val);
-  selectedRegion = val;
-  closeModal();
-  loadFeed();
-}
-
-function saveAll() {
-  localStorage.setItem("region", "");
-  selectedRegion = "";
-  closeModal();
-  loadFeed();
-}
-
-function changeRegion() {
-  localStorage.removeItem("region");
-  openModal();
-}
+// 👉 твой текст, он ОСТАЁТСЯ
+regionStatus.innerHTML = selectedRegion
+  ? `✅ Обраний район: <b>${selectedRegion}</b>`
+  : "🌍 Показано: <b>Вся Україна</b>";
 
 async function loadFeed() {
-  const status = document.getElementById("status");
-  const posts = document.getElementById("posts");
-
-  status.innerHTML = selectedRegion
-    ? `✅ Обраний район: <b>${selectedRegion}</b>`
-    : "🌍 Показано: <b>Вся Україна</b>";
-
-  posts.innerHTML = "Завантаження…";
+  status.textContent = "⏳ Завантаження...";
+  list.innerHTML = "";
 
   try {
-    const res = await fetch(
-      "https://api.allorigins.win/raw?url=" + encodeURIComponent(RSS_URL)
-    );
+    const res = await fetch(FEED_URL + "?t=" + Date.now(), {
+      cache: "no-store"
+    });
+
     const text = await res.text();
     const xml = new DOMParser().parseFromString(text, "text/xml");
-    const items = [...xml.querySelectorAll("item")];
+    const items = xml.querySelectorAll("item");
 
-    posts.innerHTML = "";
+    let shown = 0;
 
     items.forEach(item => {
       const title = item.querySelector("title")?.textContent || "";
       const desc = item.querySelector("description")?.textContent || "";
-      const link = item.querySelector("link")?.textContent || "#";
 
-      if (selectedRegion) {
-        const r = selectedRegion.toLowerCase();
-        if (!title.toLowerCase().includes(r) && !desc.toLowerCase().includes(r)) return;
-      }
+      // 🔥 ВОТ ТУТ ФИЛЬТР
+      if (selectedRegion && !title.includes(selectedRegion)) return;
 
-      posts.innerHTML += `
-        <div class="card">
-          <div class="title">${title}</div>
-          <div class="desc">${desc}</div>
-          <a class="link" href="${link}" target="_blank">Відкрити в Telegram</a>
-        </div>
-      `;
+      const div = document.createElement("div");
+      div.className = "card";
+      div.innerHTML = `<b>${title}</b><br>${desc}`;
+      list.appendChild(div);
+      shown++;
     });
 
-    if (!posts.innerHTML) {
-      posts.innerHTML = "ℹ️ Немає актуальних повідомлень";
-    }
+    status.textContent = shown
+      ? `✅ Оновлено: ${new Date().toLocaleTimeString()}`
+      : "⚠️ Немає подій для обраного району";
 
   } catch (e) {
-    posts.innerHTML = "❌ Помилка завантаження";
+    status.textContent = "❌ Помилка завантаження";
+    console.error(e);
   }
 }
+
+loadFeed();
+setInterval(loadFeed, 60_000);
 </script>
 
 </body>
 </html>
+
